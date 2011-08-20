@@ -1,0 +1,36 @@
+diff -up libexif-0.6.15/libexif/olympus/exif-mnote-data-olympus.c.olympus-byte-order libexif-0.6.15/libexif/olympus/exif-mnote-data-olympus.c
+--- libexif-0.6.15/libexif/olympus/exif-mnote-data-olympus.c.olympus-byte-order	2008-02-05 19:54:41.000000000 -0500
++++ libexif-0.6.15/libexif/olympus/exif-mnote-data-olympus.c	2008-02-05 19:59:28.000000000 -0500
+@@ -230,6 +230,15 @@ exif_mnote_data_olympus_load (ExifMnoteD
+ 		else if (buf[o2 + 6 + 1] == 1)
+ 			n->order = EXIF_BYTE_ORDER_MOTOROLA;
+ 		o2 += 8;
++		if (o2 >= buf_size) return;
++		c = exif_get_short (buf + o2, n->order);
++		if ((!(c & 0xFF)) && (c > 0x500)) {
++			if (n->order == EXIF_BYTE_ORDER_INTEL) {
++				n->order = EXIF_BYTE_ORDER_MOTOROLA;
++			} else {
++				n->order = EXIF_BYTE_ORDER_INTEL;
++			}
++		}
+ 
+ 	} else if (!memcmp (buf + o2, "OLYMPUS", 8)) {
+ 		/* Olympus S760, S770 */
+@@ -267,6 +276,16 @@ exif_mnote_data_olympus_load (ExifMnoteD
+ 		case nikonV1:
+ 
+ 			base = MNOTE_NIKON1_TAG_BASE;
++			/* Fix endianness, if needed */
++			if (o2 >= buf_size) return;
++			c = exif_get_short (buf + o2, n->order);
++			if ((!(c & 0xFF)) && (c > 0x500)) {
++				if (n->order == EXIF_BYTE_ORDER_INTEL) {
++					n->order = EXIF_BYTE_ORDER_MOTOROLA;
++				} else {
++					n->order = EXIF_BYTE_ORDER_INTEL;
++				}
++			}
+ 			break;
+ 
+ 		case nikonV2:
